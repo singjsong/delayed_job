@@ -42,9 +42,21 @@ module Delayed
         def reserve(worker, max_run_time = Worker.max_run_time)
           # We get up to 5 jobs from the db. In case we cannot get exclusive access to a job we try the next.
           # this leads to a more even distribution of jobs across the worker processes
+          Delayed::Worker.logger ||= Logger.new(File.join(Rails.root, 'log', 'delayed_job.log'))
+          self.say "finding available jobs"
           find_available(worker.name, worker.read_ahead, max_run_time).detect do |job|
-            job.lock_exclusively!(max_run_time, worker.name)
+            self.say "Attempting to lock #{worker.name} exclusively"
+            success = job.lock_exclusively!(max_run_time, worker.name)
+            self.say "locked #{worker.name} exclusively? #{success}"
+            success
           end
+        end
+
+        # TODO Julie -- copied from Worker for now
+        def say(text, level = Logger::INFO)
+          text = "[Worker(#{name})] #{text}"
+          puts text unless @quiet
+          Delayed::Worker.logger.add level, "#{Time.now.strftime('%FT%T%z')}: #{text}" if Delayed::Worker.logger
         end
 
         # Hook method that is called before a new worker is forked
@@ -91,14 +103,20 @@ module Delayed
       def invoke_job
         Delayed::Worker.lifecycle.run_callbacks(:invoke_job, self) do
           begin
+            say "#{self} invoked"
             hook :before
+            say "#{self} before hook run"
             payload_object.perform
+            say "#{self} payload object run"
             hook :success
+            say "#{self} success hook run"
           rescue Exception => e
             hook :error, e
+            say "#{self} error hook run"
             raise e
           ensure
             hook :after
+            say "#{self} after hook run"
           end
         end
       end
@@ -141,6 +159,13 @@ module Delayed
       # Call during reload operation to clear out internal state
       def reset
         @payload_object = nil
+      end
+
+      # TODO Julie -- copied from Worker for now
+      def say(text, level = Logger::INFO)
+        text = "[Worker(#{name})] #{text}"
+        puts text unless @quiet
+        Delayed::Worker.logger.add level, "#{Time.now.strftime('%FT%T%z')}: #{text}" if Delayed::Worker.logger
       end
     end
   end
