@@ -201,7 +201,7 @@ module Delayed
 
     def run(job)
       runtime =  Benchmark.realtime do
-        say "Beginning to run #{job.to_yaml}"
+        say "Beginning to run job"
         Timeout.timeout(self.class.max_run_time.to_i, WorkerTimeout) { job.invoke_job }
         job.destroy
       end
@@ -257,9 +257,9 @@ module Delayed
     # Run the next job we can get an exclusive lock on.
     # If no jobs are left we return nil
     def reserve_and_run_one_job
-      say "Trying to reserve #{self.to_yaml}"
+      say "Trying to reserve self"
       job = Delayed::Job.reserve(self)
-      say "Reserved #{job.to_yaml}"
+      say "Reserved job"
       self.class.lifecycle.run_callbacks(:perform, self, job){ result = run(job) } if job
     end
   end

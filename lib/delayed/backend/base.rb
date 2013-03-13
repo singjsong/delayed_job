@@ -107,7 +107,7 @@ module Delayed
             hook :before
             say "#{self} before hook run"
             payload_object.perform
-            say "#{self} payload object run"
+            say "#{self} payload object run -- working on #{self.handler}"
             hook :success
             say "#{self} success hook run"
           rescue Exception => e
