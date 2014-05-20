@@ -12,8 +12,8 @@ platforms :jruby do
 end
 
 group :test do
-  gem 'activerecord', ['>= 3.0', '< 4.1']
-  gem 'actionmailer', ['>= 3.0', '< 4.1']
+  gem 'activerecord', '~> 4.1.1'
+  gem 'actionmailer', '~> 4.1.1'
   gem 'coveralls', :require => false
   gem 'rspec', '>= 2.11'
   gem 'simplecov', :require => false
