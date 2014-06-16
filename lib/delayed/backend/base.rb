@@ -103,20 +103,20 @@ module Delayed
       def invoke_job
         Delayed::Worker.lifecycle.run_callbacks(:invoke_job, self) do
           begin
-            say "#{self} invoked"
+            # say "#{self} invoked"
             hook :before
-            say "#{self} before hook run"
+            # say "#{self} before hook run"
             payload_object.perform
-            say "#{self} payload object run -- working on #{self.handler}"
+            # say "#{self} payload object run -- working on #{self.handler}"
             hook :success
-            say "#{self} success hook run"
+            # say "#{self} success hook run"
           rescue Exception => e
             hook :error, e
             say "#{self} error hook run"
             raise e
           ensure
             hook :after
-            say "#{self} after hook run"
+            # say "#{self} after hook run"
           end
         end
       end
